@@ -8,8 +8,8 @@
  * Copyright (c) 2005 James F <tyranid@gmail.com>
  * Copyright (c) 2005 Julian T <lovely@crm114.net>
  *
- * $HeadURL$
- * $Id$
+ * $HeadURL: svn://svn.pspdev.org/psp/trunk/psplinkusb/psplink/shell.c $
+ * $Id: shell.c 2334 2007-11-03 16:47:05Z tyranid $
  */
 #include <pspkernel.h>
 #include <pspdebug.h>
@@ -27,6 +27,7 @@
 #include <pspthreadman_kernel.h>
 #include <pspintrman_kernel.h>
 #include <psppower.h>
+#include <psploadexec_kernel.h>
 #include <stdint.h>
 #include <usbhostfs.h>
 #include <usbasync.h>
@@ -1476,7 +1477,7 @@ static int modload_cmd(int argc, char **argv, unsigned int *vRet)
 
 	return CMD_OK;
 }
-
+#if 0
 static int modexec_cmd(int argc, char **argv, unsigned int *vRet)
 {
 	char path[1024];
@@ -1515,6 +1516,56 @@ static int modexec_cmd(int argc, char **argv, unsigned int *vRet)
 
 	return CMD_OK;
 }
+
+#else
+
+static int modexec_cmd(int argc, char **argv, unsigned int *vRet)
+{
+	char path[1024];
+	char args[1024];
+	char *file = NULL;
+	char *key = NULL;
+	int  len;
+	int  retv;
+	struct SceKernelLoadExecVSHParam le;
+
+	if(argv[0][0] == '@')
+	{
+		key = &argv[0][1];
+		if(argc < 2)
+		{
+			return CMD_ERROR;
+		}
+		file = argv[1];
+	}
+	else
+	{
+		file = argv[0];
+		key = "game";
+	}
+
+	if(handlepath(g_context.currdir, file, path, TYPE_FILE, 1))
+	{
+		len = build_args(args, path, argc - 1, &argv[1]);
+		le.size = sizeof(le);
+		le.args = len;
+		le.argp = args;
+		le.key = key;
+
+		psplinkStop();
+
+		retv = sceKernelLoadExecVSHMs2(path, &le);
+		if(retv<0){
+			SHELL_PRINT("sceKernelLoadExecVSHMs2: failed: %08x\n", retv);
+		}else{
+			SHELL_PRINT("sceKernelLoadExecVSHMs2 OK.\n");
+		}
+	}
+
+	return CMD_OK;
+}
+
+#endif
 
 static int ldstart_cmd(int argc, char **argv, unsigned int *vRet)
 {
@@ -3417,15 +3468,17 @@ static int bpset_cmd(int argc, char **argv, unsigned int *vRet)
 	if(argc > 1)
 	{
 		int i = 0;
-		while(argv[1][i])
-		{
-			if(argv[1][i] == '1')
-			{
+		while(argv[1][i]){
+			if(argv[1][i] == '1'){
 				flags |= DEBUG_BP_ONESHOT;
-			}
-			else if(argv[1][i] == 'h')
-			{
+			}else if(argv[1][i] == 'h'){
 				flags |= DEBUG_BP_HARDWARE;
+			}else if(argv[1][i] == 'r'){
+				flags |= DEBUG_BP_HARDWARE_READ;
+			}else if(argv[1][i] == 'w'){
+				flags |= DEBUG_BP_HARDWARE_WRITE;
+			}else if(argv[1][i] == 'a'){
+				flags |= DEBUG_BP_HARDWARE_ACCESS;
 			}
 
 			i++;
@@ -3436,7 +3489,7 @@ static int bpset_cmd(int argc, char **argv, unsigned int *vRet)
 	{
 		int size_left;
 
-		addr &= ~3;
+		//addr &= ~3;
 		size_left = memValidate(addr, MEM_ATTRIB_WRITE | MEM_ATTRIB_WORD | MEM_ATTRIB_EXEC);
 		if(size_left >= sizeof(unsigned int))
 		{
@@ -3743,18 +3796,6 @@ static int debugreg_cmd(int argc, char **argv, unsigned int *vRet)
 	return CMD_OK;
 }
 
-#undef BACKTRACE_DEBUG
-
-static int backtrace_cmd(int argc, char **argv, unsigned int *vRet)
-{
-#ifdef BACKTRACE_DEBUG
-	SHELL_PRINT("[Debug] [%s] [%d] \n", __FUNCTION__, __LINE__);
-#endif /* BACKTRACE_DEBUG */
-	stacktracePrint(NULL);
-	return CMD_OK;
-}
-
-	
 const char* PspInterruptNames[67] = {//67 interrupts
 	0, 0, 0, 0, "GPIO", "ATA_ATAPI", "UmdMan", "MScm0",
 	"Wlan", 0, "Audio", 0, "I2C", 0, "SIRCS_IrDA",

@@ -234,7 +234,7 @@ struct sh_command
 	SHELL_CMD("bpdis", "bd", bpdis_cmd, 1, "Disable a breakpoint", "", "num|addr") \
 	SHELL_CMD("bpena", "be", bpena_cmd, 1, "Enable a breakpoint", "", "num|addr") \
 	SHELL_CMD("bpth", NULL, bpth_cmd, 1, "Break a thread at the first available point", "", "uid|@name") \
-	SHELL_CMD("bpprint", "bt", bpprint_cmd, 0, "Print the current breakpoints", "", "") \
+	SHELL_CMD("bpprint", "bl", bpprint_cmd, 0, "Print the current breakpoints", "", "") \
 	SHELL_CMD("hwprint", NULL, hwprint_cmd, 0, "Print the hardware debugger registers", "", "") \
 	SHELL_CMD("step", "s", step_cmd, 0, "Step the next instruction", "", "") \
 	SHELL_CMD("skip", "k", skip_cmd, 0, "Skip the next instruction (i.e. jump over jals)", "", "") \
@@ -267,6 +267,7 @@ struct sh_command
 	SHELL_CMD("irqs", NULL, irqs_cmd, 0, "Display the current IRQ list (or a specific int plus subs)", "", "[intno]")\
 	SHELL_CMD("iena", NULL, iena_cmd, 2, "Enable or disable an interrupt or sub-interrupt", "", "d|e intno [sub]") \
 	SHELL_CMD("irel", NULL, irel_cmd, 1, "Release an interrupt or sub-interrupt", "", "intno [sub]") \
+	SHELL_CMD("backtrace", "bt", backtrace_cmd, 0, "Show function frame", "", "") \
 	SHELL_CMD_PCTERM("env", NULL, env_cmd, 0, "Display the environment settings", "", "") \
 	SHELL_CMD_PCTERM("set", NULL, set_cmd, 1, "Set an environment variable", "", "name=value") \
 	SHELL_CMD_PCTERM("unset", NULL, unset_cmd, 1, "Unset an environment variable", "", "name") \

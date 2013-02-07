@@ -7,8 +7,8 @@
  *
  * Copyright (c) 2005 James F <tyranid@gmail.com>
  *
- * $HeadURL$
- * $Id$
+ * $HeadURL: svn://svn.pspdev.org/psp/trunk/psplinkusb/psplink/exception.c $
+ * $Id: exception.c 2316 2007-09-17 18:13:33Z tyranid $
  */
 #include <pspkernel.h>
 #include <pspdebug.h>
@@ -20,7 +20,6 @@
 #include "util.h"
 #include "psplink.h"
 #include "debug.h"
-#include "trap.h"
 
 struct PsplinkContext *g_currex = NULL;
 struct PsplinkContext *g_list = NULL;
@@ -470,10 +469,13 @@ struct PsplinkContext* psplinkTrap(struct PsplinkContext *ctx)
 
 	switch(ctx->cont)
 	{
-		case PSP_EXCEPTION_SKIP: skip = 1;
-		case PSP_EXCEPTION_STEP: debugStep(ctx, skip);
-								 break;
-		default: break;
+		case PSP_EXCEPTION_SKIP:
+			skip = 1;
+		case PSP_EXCEPTION_STEP:
+			debugStep(ctx, skip);
+			break;
+		default:
+			break;
 	};
 
 	if(g_currex == ctx)
@@ -522,27 +524,3 @@ void exceptionInit(void)
 	g_list = g_psplinkContext;
 	sceKernelRegisterDefaultExceptionHandler((void*) psplinkDefaultExHandler);
 }
-
-extern int shprintfex(const char *fmt, ...);
-void stacktracePrint(struct PsplinkContext *ctx)
-{
-/*	SceModule *pMod;
-	SceKernelModuleInfo mod;
-	SceKernelThreadInfo thread;
-	unsigned int addr;*/
-
-	if(ctx == NULL)
-	{
-		ctx = g_currex;
-	}
-
-	if(ctx)
-	{
-		stacktrace_subr(ctx->regs.r[4], ctx->regs.r[5], ctx->regs.r[6], ctx->regs.r[7], ctx->regs.epc, ctx->regs.r[29], ctx->regs.r[30], ctx->regs.r[31], shprintfex);
-	}
-	else
-	{
-		SHELL_PRINT("No exception occurred\n");
-	}
-}
-		

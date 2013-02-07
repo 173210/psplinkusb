@@ -92,5 +92,5 @@ void exceptionPrintFPURegs(float *pFpu, unsigned int fsr, unsigned int fir);
 void exceptionPrintCPURegs(unsigned int *pRegs);
 void exceptionList(void);
 void exceptionSetCtx(int ex);
-
+void stacktracePrint(struct PsplinkContext *ctx);
 #endif
