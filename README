@@ -8,3 +8,10 @@ PSPLINK is licensed under the BSD license, see LICENSE in PSPLINK root for detai
 
 Please read the manual document for installation instructions and an example
 of usage.
+
+----------------------------
+Add ApiHook verbose and hardware breakpoint--------By TPU
+[PSPLink 硬件断点+APIHOOK显示](http://download.csdn.net/detail/jerryutscn/2886168)
+
+Add Backtrace(bt) features---------By jerryutscn
+[在PSPLink上添加BackTrace的功能](http://blog.csdn.net/jerryutscn/article/details/5775226)
