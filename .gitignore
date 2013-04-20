@@ -1,0 +1,9 @@
+# Compiled Object files
+*.o
+*.elf
+*.prx
+*.SFO
+*.PBP
+
+# Compiled Static libraries
+*.a
