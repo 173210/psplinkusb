@@ -209,7 +209,8 @@ struct sh_command
 	SHELL_CAT("fileio", "Commands to handle file io") \
 	SHELL_CMD("ls",  "dir", ls_cmd,    0, "List the files in a directory", "", "[path1..pathN]") \
 	SHELL_CMD("chdir", "cd", chdir_cmd, 1, "Change the current directory", "", "path") \
-	SHELL_CMD("cp",  "copy", cp_cmd, 2, "Copy a file", "", "source destination") \
+	SHELL_CMD("cp",  "copy", cp_cmd, 2, "Copy a file or directory", "", "source destination") \
+	SHELL_CMD("mv",  "move", mv_cmd, 2, "Move a file or directory", "", "source destination") \
 	SHELL_CMD("mkdir", NULL, mkdir_cmd, 1, "Make a Directory", "", "dir") \
 	SHELL_CMD("rm", "del", rm_cmd, 1, "Removes a File", "", "file") \
 	SHELL_CMD("rmdir", "rd", rmdir_cmd, 1, "Removes a Directory", "", "dir") \

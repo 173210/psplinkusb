@@ -1916,28 +1916,97 @@ static int rmdir_cmd(int argc, char **argv, unsigned int *vRet)
 	return CMD_OK;
 }
 
+void CopyFile(const char *src, const char *dst, int move)
+{
+	SceUID fd[2] = {
+		sceIoOpen(src, PSP_O_RDONLY, 0777),
+		sceIoOpen(dst, PSP_O_WRONLY | PSP_O_CREAT | PSP_O_TRUNC , 0777)
+	};
+	char cpbuf[4096];
+	while(1)
+	{
+		int read = sceIoRead(fd[0], cpbuf, 4096);
+		if(read > 0)
+			sceIoWrite(fd[1], cpbuf, read);
+		sceKernelDelayThread(1);
+		if(read < 4096)
+			break;
+	}
+	sceIoClose(fd[0]);
+	sceIoClose(fd[1]);
+
+	SceIoStat stat;
+	sceIoGetstat(src, &stat);
+	sceIoChstat(dst, &stat, 0);
+
+	if(move)
+		sceIoRemove(src);
+}
+
+void CopyDirectory(const char *src, const char *dst, int move)
+{
+	SceIoDirent buf;
+	memset(&buf, 0, sizeof(SceIoDirent));
+	SceUID dfd = sceIoDopen(src);
+
+	sceIoMkdir(dst, 0777);
+
+	while(sceIoDread(dfd, &buf) > 0)
+	{
+		if(strlen(buf.d_name) && strcmp(buf.d_name, ".") != 0 && strcmp(buf.d_name, "..") != 0)
+		{
+			char childsrc[sizeof(char) * (strlen(src) + strlen(buf.d_name) + 2)];
+			strcpy(childsrc, src);
+			strcat(childsrc, "/");
+			strcat(childsrc, buf.d_name);
+			char childdst[sizeof(char) * (strlen(dst) + strlen(buf.d_name) + 2)];
+			strcpy(childdst, dst);
+			strcat(childdst, "/");
+			strcat(childdst, buf.d_name);
+			if(buf.d_stat.st_attr & FIO_SO_IFDIR)
+				CopyDirectory(childsrc, childdst, move);
+			else
+				CopyFile(childsrc, childdst, move);
+		}
+		memset(&buf, 0, sizeof(SceIoDirent));
+	}
+
+	sceIoDclose(dfd);
+	if(move)
+		sceIoRmdir(src);
+}
+
 static int cp_cmd(int argc, char **argv, unsigned int *vRet)
 {
-	int in, out;
-	int n;
+	int n = 0;
+	int fd;
+	int srcisdir = 0;
 	char *source;
 	char *destination;
-	char *slash;
 
 	char fsrc[MAXPATHLEN];
 	char fdst[MAXPATHLEN];
-	char buff[2048];
 
 	source = argv[0];
 	destination = argv[1];
 
-	if( !handlepath(g_context.currdir, source, fsrc, TYPE_FILE, 1) )
+	if( !handlepath(g_context.currdir, source, fsrc, TYPE_ETHER, 0) )
 		return CMD_ERROR;
 	
 	if( !handlepath(g_context.currdir, destination, fdst, TYPE_ETHER, 0) )
 		return CMD_ERROR;
 
-	if(isdir(fdst))
+	srcisdir = isdir(fsrc);
+
+	if (!srcisdir) {
+		if ((fd = sceIoOpen(fsrc, PSP_O_RDONLY, 0777)) < 0)
+			return CMD_ERROR;
+		else sceIoClose(fd);
+	}
+
+	char *slash = strrchr(fsrc, '/');
+
+	if(isdir(fdst) && (!srcisdir || strcmp(slash, strrchr(fdst, '/'))))
 	{
 		int len;
 
@@ -1946,40 +2015,110 @@ static int cp_cmd(int argc, char **argv, unsigned int *vRet)
 		{
 			strcat(fdst, "/");
 		}
-
-		slash = strrchr(fsrc, '/');
 		strcat(fdst, slash+1);
 	}
 
-	SHELL_PRINT("cp %s -> %s\n", fsrc, fdst);
-
-	in = sceIoOpen(fsrc, PSP_O_RDONLY, 0777);
-	if(in < 0)
-	{
-		SHELL_PRINT("Couldn't open source file %s, 0x%08X\n", fsrc, in);
+	if(srcisdir) {
+		if (isdir(fdst)) n = 1;
+	} else {
+		if ((fd = sceIoOpen(fdst, PSP_O_RDONLY, 0777)) >= 0) {
+			sceIoClose(fd);
+			n = 1;
+		}
+	}
+	if (n) {
+		printf("The destination is already exists.");
 		return CMD_ERROR;
 	}
 
-	out = sceIoOpen(fdst, PSP_O_WRONLY | PSP_O_CREAT | PSP_O_TRUNC, 0777);
+	printf("cp %s -> %s\n", fsrc, fdst);
 
-	if(out < 0)
-	{
-		sceIoClose(in);
-		SHELL_PRINT("Couldn't open destination file %s, 0x%08X\n", fdst, out);
+	if(isdir(fsrc)) CopyDirectory(fsrc, fdst, 0);
+	else CopyFile(fsrc, fdst, 0);
+
+	return CMD_OK;
+}
+
+static int mv_cmd(int argc, char **argv, unsigned int *vRet)
+{
+	int n = 0;
+	int fd;
+	int srcisdir = 0;
+	char *source;
+	char *destination;
+
+	char fsrc[MAXPATHLEN];
+	char fdst[MAXPATHLEN];
+
+	source = argv[0];
+	destination = argv[1];
+
+	if( !handlepath(g_context.currdir, source, fsrc, TYPE_ETHER, 0) )
 		return CMD_ERROR;
-	}
-
-	while(1) {
-		n = sceIoRead(in, buff, 2048);
-
-		if(n <= 0)
-			break;
-		
-		sceIoWrite(out, buff, n);
-	}
 	
-	sceIoClose(in);
-	sceIoClose(out);
+	if( !handlepath(g_context.currdir, destination, fdst, TYPE_ETHER, 0) )
+		return CMD_ERROR;
+
+	srcisdir = isdir(fsrc);
+
+	if (!srcisdir) {
+		if ((fd = sceIoOpen(fsrc, PSP_O_RDONLY, 0777)) < 0)
+			return CMD_ERROR;
+		else sceIoClose(fd);
+	}
+
+	char *slash = strrchr(fsrc, '/');
+
+	if((isdir(fdst) || *(fdst + strlen(fdst) - 1) == ':') && (!srcisdir || strcmp(slash, strrchr(fdst, '/')))) {
+		int len;
+
+		len = strlen(fdst);
+		if((len > 0) && (fdst[len-1] != '/'))
+		{
+			strcat(fdst, "/");
+		}
+		strcat(fdst, slash+1);
+	}
+
+	if(srcisdir) {
+		if (isdir(fdst)) n = 1;
+	} else {
+		if ((fd = sceIoOpen(fdst, PSP_O_RDONLY, 0777)) >= 0) {
+			sceIoClose(fd);
+			n = 1;
+		}
+	}
+	if (n) {
+		printf("The destination is already exists.");
+		return CMD_ERROR;
+	}
+
+	printf("mv %s -> %s\n", fsrc, fdst);
+
+	char src_devname[8];
+
+	for(n = 0; n <= 7; n++) {
+		src_devname[n] = fsrc[n];
+		if (src_devname[n] == ':') {
+			n++;
+			src_devname[n] = '\0';
+			break;
+		}
+	}
+
+	if (!strncmp(src_devname, fdst, n)) {
+		char *data[2];
+
+		data[0] = fsrc + n;
+		data[1] = fdst + n;
+
+		if(!sceIoDevctl(src_devname, 0x02415830, &data, sizeof(data), NULL, 0))
+			return CMD_OK;
+	}
+
+
+	if(isdir(fsrc)) CopyDirectory(fsrc, fdst, 1);
+	else CopyFile(fsrc, fdst, 1);
 
 	return CMD_OK;
 }

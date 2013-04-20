@@ -218,6 +218,34 @@ int handlepath(const char *currentdir, const char *relative, char *path, int typ
 	}
 
 	strcat(path, relative);
+
+	char *p = path;
+
+	while((p = strstr(p, "/.")) != NULL)
+	{
+		p += 2;                        //*p is the character after "/."
+		if(*p == '\0' || *p == '/') {
+			strcpy(p - 2, p);
+			break;
+		}
+		else if(*p == '.')
+		{
+			char *p2 = p + 1;      //*p2 is the string after ".."
+			if(*p2 != '\0' && *p2 != '/') p += 2;
+			else
+			{
+				p -= 3;     //*p is the character before "/.."
+
+				while(*p != '/')
+				{
+					if (p == path) return 0;
+					p--;
+				}
+				strcpy(p, p2); //*p is the last slash before "/.."
+			}
+		}
+	}
+
 	len = strlen(path);
 	while((len > 0) && (is_aspace(path[len-1])))
 	{
