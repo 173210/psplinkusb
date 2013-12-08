@@ -42,6 +42,7 @@
 #include "decodeaddr.h"
 #include "debug.h"
 #include "libs.h"
+#include "lwmutex.h"
 #include "thctx.h"
 #include "apihook.h"
 #include "tty.h"
@@ -400,6 +401,60 @@ static int thcreat_cmd(int argc, char **argv, unsigned int *vRet)
 	*vRet = uid;
 
 	return CMD_OK;
+}
+
+static int print_lwmtxinfo(SceUID uid, int verbose)
+{
+	SceKernelLwMutexInfo info;
+	int ret;
+
+	memset(&info, 0, sizeof(info));
+	info.size = sizeof(info);
+	ret = sceKernelReferLwMutexStatusByID(uid, &info);
+
+	if (ret < 0) return ret;
+
+	SHELL_PRINT("UID: 0x%08X - Workarea: 0x%08X - Name: %s\n",
+		info.uid, (int)info.workarea, info.name);
+	if(verbose)
+	{
+		SHELL_PRINT("Attr: 0x%08X\n"
+			"InitCount: %d - CurrentCount: %d\n"
+			"LockThread: 0x%08X - NumWaitThreads: %d\n",
+			info.attr,
+			info.initCount, info.currentCount,
+			info.lockThread, info.numWaitThreads);
+	}
+
+	return 0;
+}
+
+static int lwmtxlist_cmd(int argc, char **argv, unsigned int *vRet)
+{
+	return threadmanlist_cmd(argc, argv, 13, "LwMutex", print_lwmtxinfo);
+}
+
+static int lwmtxinfo_cmd(int argc, char **argv, unsigned int *vRet)
+{
+	SceUID uid;
+	int ret;
+	char *endp;
+
+	uid = strtoul(argv[0], &endp, 0);
+	if(*endp)
+	{
+		SHELL_PRINT("ERROR: Invalid uid %s\n", argv[0]);
+		return CMD_ERROR;
+	}
+
+	ret = print_lwmtxinfo(uid, 1);
+	if(ret)
+	{
+		SHELL_PRINT("Error refering LwMutex - 0x%08X\n", ret);
+		return CMD_ERROR;
+	}
+	else
+		return CMD_OK;
 }
 
 static int print_eventinfo(SceUID uid, int verbose)

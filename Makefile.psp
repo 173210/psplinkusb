@@ -3,6 +3,7 @@ all:
 	$(MAKE) -C libpsplink_driver all
 	$(MAKE) -C libusbhostfs all
 	$(MAKE) -C libusbhostfs_driver all
+	$(MAKE) -C libpspkernel all
 	$(MAKE) -C psplink	all
 	$(MAKE) -C psplink_user all
 	$(MAKE) -C usbhostfs all
@@ -46,6 +47,7 @@ clean:
 	$(MAKE) -C libpsplink_driver clean
 	$(MAKE) -C libusbhostfs clean
 	$(MAKE) -C libusbhostfs_driver clean
+	$(MAKE) -C libpspkernel clean
 	$(MAKE) -C psplink	clean
 	$(MAKE) -C psplink_user clean
 	$(MAKE) -C usbhostfs clean

@@ -3,6 +3,7 @@ all:
 	$(MAKE) -C libpsplink_driver all
 	$(MAKE) -C libusbhostfs all
 	$(MAKE) -C libusbhostfs_driver all
+	$(MAKE) -C libpspkernel all
 	$(MAKE) -C psplink all PSP_FW_VERSION=271
 	$(MAKE) -C psplink_user all PSP_FW_VERSION=271
 	$(MAKE) -C usbhostfs all PSP_FW_VERSION=271
@@ -35,6 +36,7 @@ clean:
 	$(MAKE) -C libpsplink_driver clean
 	$(MAKE) -C libusbhostfs clean
 	$(MAKE) -C libusbhostfs_driver clean
+	$(MAKE) -C libpspkernel clean
 	$(MAKE) -C psplink	clean
 	$(MAKE) -C psplink_user clean
 	$(MAKE) -C usbhostfs clean

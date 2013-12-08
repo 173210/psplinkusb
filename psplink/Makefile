@@ -11,9 +11,9 @@ INCDIR = ../usbhostfs
 CFLAGS = -Os -G0 -Wall -fno-builtin-printf -ggdb
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS = $(CFLAGS)
-LDFLAGS=-nodefaultlibs -L../libusbhostfs_driver
+LDFLAGS= -nodefaultlibs -L../libusbhostfs_driver
 
-LIBDIR =
+LIBDIR = ../libpspkernel
 
 LIBS = -lpspusb_driver -lpspusbstor -lpspumd -lusbhostfs_driver
 

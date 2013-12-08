@@ -98,6 +98,8 @@ struct sh_command
 	SHELL_CMD("thctx",  NULL, thctx_cmd, 1, "Find and print the full thread context", "", "uid|@name") \
 	SHELL_CMD("thpri",  "tp", thpri_cmd, 2, "Change a threads current priority", "", "uid|@name pri") \
 	SHELL_CMD("thcreat", "tc", thcreat_cmd, 5, "Create a new thread", "", "name entry pri stack attr" )\
+	SHELL_CMD("lwmtxlist", "ll", lwmtxlist_cmd, 0, "List the lwmutexs in the system", "", "[v]") \
+	SHELL_CMD("lwmtxinfo", "lii", lwmtxinfo_cmd, 1, "Refer LwMutex by ID and print the info", "", "uid") \
 	SHELL_CMD("evlist", "el", evlist_cmd, 0, "List the event flags in the system", "", "[v]") \
 	SHELL_CMD("evinfo", "ei", evinfo_cmd, 1, "Print info about an event flag", "", "uid|@name") \
 	SHELL_CMD("evdel", "ed", evdel_cmd, 1, "Delete an event flag", "", "uid|@name") \
