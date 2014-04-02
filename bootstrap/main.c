@@ -54,7 +54,6 @@ int main_thread(SceSize args, void *argp)
 	char prx_path[256];
 	char *path;
 	SceUID modid;
-	int ret;
 
 	pspDebugScreenInit();
 	sceDisplayWaitVblankStart();
@@ -85,7 +84,7 @@ int main_thread(SceSize args, void *argp)
 		int status;
 
 		printf("Starting psplink module\n");
-		ret = sceKernelStartModule(modid, args, argp, &status, NULL);
+		sceKernelStartModule(modid, args, argp, &status, NULL);
 		printf("Done\n");
 	}
 	else

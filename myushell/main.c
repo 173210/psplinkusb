@@ -50,7 +50,6 @@ static int main_thread(SceSize args, void *argp)
 {
 	char cmdbuf[128];
 	int cpos;
-	int retv;
 
 	cpos = 0;
 	while(1){
@@ -60,7 +59,7 @@ static int main_thread(SceSize args, void *argp)
 		}
 		if(cmdbuf[cpos]=='\n'){
 			cmdbuf[cpos] = 0;
-			retv = parse_cmd(cmdbuf);
+			parse_cmd(cmdbuf);
 			cpos = 0;
 		}else{
 			if(cpos<127)

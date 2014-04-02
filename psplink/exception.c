@@ -538,7 +538,10 @@ void stacktracePrint(struct PsplinkContext *ctx)
 
 	if(ctx)
 	{
-		stacktrace_subr(ctx->regs.r[4], ctx->regs.r[5], ctx->regs.r[6], ctx->regs.r[7], ctx->regs.epc, ctx->regs.r[29], ctx->regs.r[30], ctx->regs.r[31], shprintfex);
+		stacktrace_subr(
+			(mips_reg_t)ctx->regs.r[4], (mips_reg_t)ctx->regs.r[5], (mips_reg_t)ctx->regs.r[6], (mips_reg_t)ctx->regs.r[7],
+			(mips_reg_t)ctx->regs.epc, (mips_reg_t)ctx->regs.r[29], (mips_reg_t)ctx->regs.r[30], (mips_reg_t)ctx->regs.r[31],
+			(void (*)(const char*,...))shprintfex);
 	}
 	else
 	{

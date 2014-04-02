@@ -165,6 +165,7 @@ int shprintf(const char *fmt, ...)
 
 int shprintfex(const char *fmt, ...)
 {
+	int num = 0xFF;
 	char szfmt[1024];
 	struct prnt_ctx ctx;
 	va_list opt;
@@ -172,7 +173,7 @@ int shprintfex(const char *fmt, ...)
 	sprintf(szfmt, "\xff %s \xfe", fmt);
 	ctx.len = 0;
 
-	va_start(opt, szfmt);
+	va_start(opt, num);
 
 	prnt((prnt_callback) cb, (void*) &ctx, szfmt , opt);
 

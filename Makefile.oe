@@ -27,7 +27,7 @@ release: clean all
 	cp -Rf usbhostfs_pc release_oe/pc
 	cp -Rf windows release_oe/pc
 	cp usbhostfs/usbhostfs.h release_oe/pc/usbhostfs_pc
-	cp README release_oe
+	cp README.md release_oe
 	cp LICENSE release_oe
 	cp psplink_manual.pdf release_oe
 
