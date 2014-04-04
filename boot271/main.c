@@ -47,14 +47,14 @@ int _main(SceSize args, void *argp)
 		SceUID mod = sceKernelLoadModule(path, 0, NULL);
 		if (mod < 0)
 		{
-			pspDebugScreenPrintf("Error 0x%08X loading module.\n", mod);
+			pspDebugScreenPrintf("Error 0x%08X loading module %s.\n", mod, path);
 			break;
 		}
 
 		mod = sceKernelStartModule(mod, args, argp, NULL, NULL);
 		if (mod < 0)
 		{
-			pspDebugScreenPrintf("Error 0x%08X starting module.\n", mod);
+			pspDebugScreenPrintf("Error 0x%08X starting module %s.\n", mod, path);
 			break;
 		}
 
